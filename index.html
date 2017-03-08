@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <style>
+        .vcenter {
+            display: inline-block;
+            vertical-align: middle;
+            float: none;
+        }
+
+        div.tooltip {
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            position: absolute;
+            text-align: center;
+            width: 200px;
+            height: 100px;
+            padding: 2px;
+            font-size: 20px;
+            background: #696d72;
+            pointer-events: none;
+            color: white;
+        }
+
+        div.heading {
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            position: absolute;
+            text-align: center;
+            width: 400px;
+            height: 100px;
+            padding: 2px;
+            font-size: 30px;
+            background: #696d72;
+            pointer-events: none;
+            color: white;
+        }
+
+        body {
+            background-color: #696d72;
+        }
+
+        div.footer a {
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            font-size: 30px;
+        }
+        /* unvisited link */
+
+        a:link {
+            color: white;
+        }
+        /* visited link */
+
+        a:visited {
+            color: white;
+        }
+        /* mouse over link */
+
+        a:hover {
+            color: #969ba3;
+        }
+        /* selected link */
+
+        a:active {
+            color: #969ba3;
+        }
+
+        .modal-content {
+            background: #696d72;
+            border-color: #696d72;
+            color: white;
+        }
+
+        .modal-header {
+            border-bottom: 0px;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-9">
+                <div class='viz'>
+                </div>
+            </div>
+            <div class="col-lg-3 text-center vcenter">
+                <div class='footer'>
+                    <!-- AGHHH HOW TO DO THIS BETTER! -->
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    </br>
+                    <a href='#myModal' data-toggle="modal" data-target="#myModal">How was this visualisation made?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <div class='viz'>
+  </div>
+  <div class='footer'>
+    <a href='#myModal' data-toggle="modal" data-target="#myModal">More info on the visualisation...</a>
+  </div> -->
+    <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title"> </h4>
+          </div>
+            <div class="modal-content">
+                <div class="modal-body">
+                    <h4>Data</h4>
+                    <p>
+                    Two main datasets were used in this visualisation both of which came from the <u><a href = 'https://data.gov.uk/'>UK governments open data portal</a></u>.
+                    The first dataset describes the number of reported criminal offences in one
+                    of twelve general categories for each local authority in the UK - offence counts were given for
+                    each year between 2003 and 2011. The second dataset consisted of yearly population estimates for
+                    each local authority ranging from 2001 until 2012. Also used was a set of GeoJSON shapefiles
+                    for each local authority, these were obtained from <u><a href='https://github.com/martinjc/UK-GeoJSON'>@compjcdf</a></u>.
+                    </p>
+                    </br>
+                    <h4>Method</h4>
+                    <p>
+                    I decided to focus only on drug offences. My initial thought was to display the absolute change in offence
+                    counts, however this over emphasised areas with large populations. In order to more equally represent
+                    increases across the country I decided to show proportional increases. In order to do this I used only
+                    the counts from the start (2003) and the end (2011) of the period covered by the dataset. The percentage
+                    increase was calculated with respect to the counts in 2003. Having done this I noticed that there was a
+                    very large outlier in the data - Hertsmere had a 700% increase in offences (76 offences to 630). I
+                    hypothesised that this could be due to a large increase in population over the period. To take this
+                    into account it made sense to further normalise the offence counts using each authorities population
+                    size - using the population data for each area I was able to calculate offences per 1000 residents.
+                    There had in fact not been any large increase in the population of Hertsmere and this normalisation
+                    only brought the increase down to 680%!
+                   </p>
+                   </br>
+                   <h4>Improvements</h4>
+                   <p>
+                   The current colour scheme does not clearly show the extremes in the data. The largest increase is over 700%, whilst
+                   the largest decrease is only by 50% - this difference is not clear! Some kind of logarithmic scale could help...
+                  </p>
+                   </br>
+                   <p>The analysis notebook, data and html/javascript for this page can be found on my <u><a href='https://github.com/josh-gree/crimeviz'>GitHub</a></u>. Hope you enjoyed!</p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            var width = 960,
+                height = 700;
+
+            // This needs to change given different data (ie max,min)
+            var colors = d3.scaleLinear().domain([-1, 0, 7.2894736842105265]).range(["blue", "white", "red"]);
+
+            var projection = d3.geoAlbers()
+                .center([0, 50.4])
+                .rotate([4.4, 0])
+                .parallels([50, 60])
+                .scale(1200 * 5)
+                .translate([width / 2, height / 2 + 250]);
+
+            // This should select a div in html rather than body, one div for each crime
+            var div1 = d3.select("div.viz").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            var div2 = d3.select("div.viz").append("div")
+                .attr("class", "heading")
+                .style("opacity", 1)
+                .text('Drug offences: percentage increase of offences per 1000 people between 2003 and 2011')
+                .style("left", 50 + "px")
+                .style("top", 50 + "px");
+
+            var div3 = d3.select("div.viz").append("div")
+                .attr("class", "info")
+                .style("opacity", 0)
+                .text('More info...')
+                .style("left", 870 + "px")
+                .style("top", 560 + "px");
+
+
+
+            var path = d3.geoPath()
+                .projection(projection)
+                .pointRadius(2);
+
+            var svg = d3.select("div.viz").append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+
+
+            d3.json("data/drug_change.json", function(error, uk) {
+                var features = uk.features;
+                svg.selectAll('path')
+                    .data(features)
+                    .enter().append('path')
+                    .attr('d', path)
+                    .style('stroke', '#696d72')
+                    .style('stroke-width', '0.1')
+                    .style('fill', function(d, i) {
+                        return colors(d.properties['Drug offences'])
+                    })
+                    .on("mouseover", function(d) {
+                        d3.select(this).transition().duration(300).style('stroke-width', '0.6').style('stroke', 'black');
+                        div1.transition().duration(300)
+                            .style("opacity", 1)
+
+                        div1.text(percent_string(d.properties['Drug offences']) + ' in ' + d.properties.LAD13NM)
+                            .style("left", 800 + "px")
+                            .style("top", 200 + "px");
+                    })
+                    .on("mouseout", function() {
+                        d3.select(this)
+                            .transition().duration(300)
+                            .style('stroke', '#696d72')
+                            .style('stroke-width', '0.1');
+                        //.style('fill', function(d,i){return colors(d.properties['Drug offences'])});
+                        div1.transition().duration(300)
+                            .style("opacity", 0);
+                    })
+            });
+
+            function fix_scroll(e) {
+                e.preventDefault();
+            };
+
+
+            function checkKey(e) {
+
+                if (e.keyCode == '38') {
+                    e.preventDefault();
+                } else if (e.keyCode == '40') {
+                    e.preventDefault();
+                };
+
+            };
+
+            window.onmousewheel = fix_scroll;
+            window.onkeydown = checkKey;
+
+
+            function percent_string(val) {
+                x = (val * 100).toFixed(0)
+
+                if (x > 0) {
+                    return Math.abs(x) + '% increase'
+                } else {
+                    return Math.abs(x) + '% decrease'
+                }
+
+            }
+        </script>
+</body>
