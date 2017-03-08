@@ -1,0 +1,3 @@
+# Drug offences visualisation
+
+- After running the full notebook it should be possible to use pythons [SimpleHTTPServer](https://docs.python.org/2/library/simplehttpserver.htm) to view the d3.js viz in the index.html file...
